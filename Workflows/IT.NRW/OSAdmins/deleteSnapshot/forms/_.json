@@ -1,0 +1,1 @@
+{"layout":{"pages":[{"id":"page_1","title":"General","sections":[{"id":"section_0","fields":[{"id":"snapshot","display":"valuePickerTree"}]}]}]},"schema":{"snapshot":{"type":{"dataType":"reference","isMultiple":false,"referenceType":"VC:VirtualMachineSnapshot"},"label":"snapshot","id":"snapshot"}},"itemId":""}

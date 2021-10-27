@@ -1,0 +1,83 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<workflow xmlns="http://vmware.com/vco/workflow" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://vmware.com/vco/workflow http://vmware.com/vco/workflow/Workflow-v4.xsd" root-name="item1" object-name="workflow:name=generic" id="7e1cebc4-b72a-40b5-8de8-6dc9f0d48931" version="8.1.0" api-version="6.0.0" allowed-operations="evf" restartMode="1" resumeFromFailedMode="0">
+  <display-name><![CDATA[Check CustomForm Exists]]></display-name>
+  <position y="50.0" x="100.0"/>
+  <input>
+    <param name="packageName" type="string"/>
+    <param name="lcmUser" type="string"/>
+    <param name="lcmPassword" type="SecureString"/>
+    <param name="lcmHost" type="string"/>
+    <param name="packageType" type="string"/>
+    <param name="testEndpointLink" type="string"/>
+  </input>
+  <workflow-item name="item0" type="end" end-mode="0">
+    <position y="45.40909090909091" x="524.5"/>
+  </workflow-item>
+  <workflow-item name="item1" out-name="item2" type="task">
+    <display-name><![CDATA[Adding Rest Host]]></display-name>
+    <script encoded="false"><![CDATA[var host;
+
+for (var xenonHost in RESTHostManager.getHosts() ){
+	var xenonHostId = RESTHostManager.getHosts()[xenonHost];
+	var xenonHostObj = RESTHostManager.getHost(xenonHostId);
+	if (xenonHostObj && xenonHostObj.name.indexOf("LcmHost") != -1 ) {
+		host = xenonHostObj;
+		break;
+	}
+
+}
+
+if(!host){
+	var url = "https://"+lcmHost;
+	try{			
+		System.getModule("com.vmware.cse.clm.utils").getCertificates(url,"");
+	} catch (certError){
+		throw "Certificate Import Error while adding xenon rest host in test server "+lcmHost+" : "+certError;
+	}
+	host = System.getModule("com.vmware.cse.utils").addRESTHost("LcmHost-id="+System.nextUUID(),url,lcmUser,lcmPassword);
+	
+}]]></script>
+    <in-binding>
+      <bind name="lcmUser" type="string" export-name="lcmUser"/>
+      <bind name="lcmPassword" type="SecureString" export-name="lcmPassword"/>
+      <bind name="lcmHost" type="string" export-name="lcmHost"/>
+    </in-binding>
+    <out-binding/>
+    <position y="55.40909090909091" x="204.5"/>
+  </workflow-item>
+  <workflow-item name="item2" out-name="item0" type="task" script-module="com.vmware.cse.clm.utils/checkContentExists">
+    <display-name><![CDATA[checkContentExists]]></display-name>
+    <script encoded="false"><![CDATA[//Auto generated script, cannot be modified !
+System.getModule("com.vmware.cse.clm.utils").checkContentExists(endpointLink,packageType,packageName,lcmHost,lcmUser,lcmPassword) ;]]></script>
+    <in-binding>
+      <bind name="endpointLink" type="string" export-name="testEndpointLink"/>
+      <bind name="packageType" type="string" export-name="packageType"/>
+      <bind name="packageName" type="string" export-name="packageName"/>
+      <bind name="lcmHost" type="string" export-name="lcmHost"/>
+      <bind name="lcmUser" type="string" export-name="lcmUser"/>
+      <bind name="lcmPassword" type="SecureString" export-name="lcmPassword"/>
+    </in-binding>
+    <out-binding/>
+    <position y="55.40909090909091" x="344.5"/>
+  </workflow-item>
+  <presentation>
+    <p-param name="packageName">
+      <desc><![CDATA[packageName]]></desc>
+    </p-param>
+    <p-param name="lcmUser">
+      <desc><![CDATA[lcmUser]]></desc>
+    </p-param>
+    <p-param name="lcmPassword">
+      <desc><![CDATA[lcmPassword]]></desc>
+    </p-param>
+    <p-param name="lcmHost">
+      <desc><![CDATA[lcmHost]]></desc>
+    </p-param>
+    <p-param name="packageType">
+      <desc><![CDATA[packageType]]></desc>
+    </p-param>
+    <p-param name="testEndpointLink">
+      <desc><![CDATA[testEndpointLink]]></desc>
+    </p-param>
+  </presentation>
+</workflow>

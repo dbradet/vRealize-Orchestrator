@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<ns2:workflow xmlns:ns2="http://vmware.com/vco/workflow" root-name="item1" object-name="workflow:name=generic" id="e8aba7ae-e603-4b89-bcc1-342e5b3c2e63" editor-version="2.0" version="0.0.0" api-version="6.0.0" restartMode="1" resumeFromFailedMode="0">
+    <display-name>DB - One VM Validation</display-name>
+    <position y="50.0" x="100.0"/>
+    <input/>
+    <output/>
+    <attrib name="vm" type="VC:VirtualMachine">
+        <value encoded="n">dunes://service.dunes.ch/CustomSDKObject?id='vcenter-1.vs-ti.local%2Cid:vm-1278'&amp;dunesName='VC:VirtualMachine'</value>
+        <description>The virtual machine from which to get a custom attribute</description>
+    </attrib>
+    <attrib name="customAttributeName" type="string">
+        <value encoded="n">Order</value>
+        <description>The name of the custom attribute</description>
+    </attrib>
+    <workflow-item name="item0" type="end" end-mode="0" comparator="0">
+        <in-binding/>
+        <out-binding/>
+        <position y="50.0" x="400.0"/>
+    </workflow-item>
+    <workflow-item name="item1" out-name="item0" type="link" linked-workflow-id="80d0a120-ba91-4bee-8037-6b61b2121c1f" comparator="0">
+        <display-name>DB - Get custom attribute</display-name>
+        <script encoded="false"></script>
+        <in-binding>
+            <bind name="vm" type="VC:VirtualMachine" export-name="vm">
+                <description>The virtual machine from which to get a custom attribute</description>
+            </bind>
+            <bind name="customAttributeName" type="string" export-name="customAttributeName">
+                <description>The name of the custom attribute</description>
+            </bind>
+        </in-binding>
+        <out-binding/>
+        <description> </description>
+        <position y="50.0" x="220.0"/>
+    </workflow-item>
+</ns2:workflow>

@@ -1,0 +1,67 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="addRESTHost" result-type="REST:RESTHost" api-version="6.0.0" id="8fa9c6e1-5d01-443a-b2ec-c919f99c5e4a" version="8.1.0" allowed-operations="evf" category-name="com.vmware.cse.utils">
+  <description><![CDATA[Add new REST host]]></description>
+  <param n="name" t="string"><![CDATA[The name of the new REST host]]></param>
+  <param n="url" t="string"><![CDATA[The URL of the new REST host]]></param>
+  <param n="username" t="string"><![CDATA[]]></param>
+  <param n="password" t="SecureString"><![CDATA[]]></param>
+  <script encoded="false"><![CDATA[//Add rest host
+var port;
+var ssl = true;
+
+Server.log("addRESTHost name="+name + " url=" + url);
+System.debug("addRESTHost name="+name + " url=" + url);
+
+var urlObj = System.getModule("com.vmware.cse.utils").getUrlPart(url);
+if (!urlObj){
+	throw "Error: Could not get URL parts from URL: " + url;
+}
+var baseUrl = urlObj.protocol + "//" + urlObj.host;	
+
+try{
+	port = parseInt(urlObj.port);
+} catch (e){
+	System.debug(e);
+}
+
+if (urlObj.protocol.indexOf("https") != -1){
+	ssl = true;
+	if (!port){	port = 443 }
+} else {
+	ssl = false;
+	if (!port){	port = 80 }
+}
+
+if (ssl){
+	try{
+		System.getModule("com.vmware.cse.clm.utils").getCertificates("https://"+urlObj.hostname+":"+port,"");
+	}catch (certError){
+		throw "Certificate Import Error in addRestHost : "+certError;
+	}
+}
+
+var host = new RESTHost(name);
+host.url = baseUrl;
+var authType = "Basic";
+if (!username){
+	authType = "NONE";
+}
+var authenticationObject = RESTAuthenticationManager.createAuthentication(authType, ["Shared Session", username, password]);
+host.authentication = authenticationObject;
+host.hostVerification = false;
+host.connectionTimeout = 300;
+host.operationTimeout = 300;
+try{
+	host = RESTHostManager.addHost(host);
+} catch (e1){
+	try{
+		host = RESTHostManager.addHost(host);
+	} catch (e2){
+		throw "RESTHostManager.addHost failed with error: " + e2;
+	}
+}
+hostId = host.id;	
+host = RESTHostManager.getHost(hostId);	
+return host;
+]]></script>
+</dunes-script-module>

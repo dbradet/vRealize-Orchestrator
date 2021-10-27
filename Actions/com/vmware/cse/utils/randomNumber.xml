@@ -1,0 +1,6 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="randomNumber" result-type="number" api-version="6.0.0" id="e8ca6a39-596c-4c44-8d9f-9e05e278ed20" version="8.1.0" allowed-operations="evf" category-name="com.vmware.cse.utils">
+  <param n="min" t="number"><![CDATA[]]></param>
+  <param n="max" t="number"><![CDATA[]]></param>
+  <script encoded="false"><![CDATA[return Math.random() * (max - min) + min;]]></script>
+</dunes-script-module>

@@ -1,0 +1,79 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="addHost" result-type="REST:RESTHost" api-version="6.0.0" id="b4ed4868-eea4-4e2d-8128-6e0c7594f8a7" version="8.1.0" allowed-operations="evf" category-name="com.vmware.cse.clm.xenon">
+  <param n="id" t="string"><![CDATA[]]></param>
+  <script encoded="false"><![CDATA[var host;
+
+//Find id - dont create a duplicate but return it
+//Inventory may need catching up - apply a short sleep
+for (var xenonHost in RESTHostManager.getHosts() ){
+	var xenonHostId = RESTHostManager.getHosts()[xenonHost];
+	var xenonHostObj = RESTHostManager.getHost(xenonHostId);
+	if (xenonHostObj && xenonHostObj.name.indexOf("xenon") != -1 ) {
+		host = xenonHostObj;
+		break;
+	}
+
+}
+
+if (!host) {
+
+	System.log("Adding new Xenon Host");
+//	var hostname = System.getModule("com.vmware.cse.clm.configs").getValueFromGlobalConfig("clmServer");
+	var hostname = System.getModule("com.vmware.cse.clm.configs").getValueFromGlobalConfig("clmServer");
+	if (hostname == null || hostname == "") {
+		throw "hostname cannot be null"
+	}
+	var port = System.getModule("com.vmware.cse.utils").getUrlPart(hostname).port;
+	var url = "";
+	if(port){
+		url = "https://" + hostname + ":" + port
+	}else{
+		url = "https://" + hostname;
+	}
+	//var url = "https://" + hostname;
+		
+	var urlObj = System.getModule("com.vmware.cse.utils").getUrlPart(url);
+	if (!urlObj){
+		throw "Error: Could not get URL parts from URL: " + url;
+	}
+	var baseUrl = urlObj.protocol + "//" + urlObj.host;
+	
+	var ssl = true;
+	var port;
+	try{
+		port = parseInt(urlObj.port);
+	} catch (e){
+		System.debug(e);
+	}
+		
+	if (urlObj.protocol.indexOf("https") != -1){
+		ssl = true;
+		if (!port){	port = 443 }
+	} else {
+		ssl = false;
+		if (!port){	port = 80 }
+	}
+		
+	if (ssl){
+		try{			
+			System.getModule("com.vmware.cse.clm.utils").getCertificates("https://"+urlObj.hostname+":"+port,"");
+		} catch (certError){
+			throw "Certificate Import Error in addHost : "+certError;
+		}
+	}	
+	
+
+	if(!id) {
+		id = System.nextUUID();
+	}	
+		
+	var host = System.getModule("com.vmware.cse.utils").addRESTHost("xenon-id="+id,url,"","");
+	if (!host){
+		throw("Failed to create REST host");
+	}
+}
+
+return host;
+
+	]]></script>
+</dunes-script-module>

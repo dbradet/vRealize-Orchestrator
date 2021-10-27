@@ -1,0 +1,74 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="request" result-type="string" api-version="6.0.0" id="ce62d65e-783f-4160-a558-ee942fe33e10" version="8.1.0" allowed-operations="evf" category-name="com.vmware.cse.clm.xenon">
+  <param n="method" t="string"><![CDATA[]]></param>
+  <param n="url" t="string"><![CDATA[]]></param>
+  <param n="body" t="Any"><![CDATA[]]></param>
+  <param n="host" t="REST:RESTHost"><![CDATA[]]></param>
+  <param n="userIdentity" t="string"><![CDATA[]]></param>
+  <script encoded="false"><![CDATA[
+var headers = new Properties();
+headers.put("Content-type","application/json");
+var scheme = "https://";
+var hostname = System.getModule("com.vmware.cse.clm.configs").getValueFromGlobalConfig("clmServer");
+var port = System.getModule("com.vmware.cse.utils").getUrlPart(hostname).port;
+var currentCount = 0;
+var retryCount = 1;
+
+var baseUrl;
+if (url.indexOf("https") == -1){
+	if(port){
+		baseUrl = scheme + hostname + ":" + port;
+	}else{
+		baseUrl = scheme + hostname;
+	}
+}
+
+url = baseUrl + url;
+
+if (!host) {
+
+	host = System.getModule("com.vmware.cse.clm.xenon").addHost();
+
+}
+
+var getRequestCountMax = 30;
+var getRequestCountCurrent = 0 ;
+
+var response;
+while (currentCount <= retryCount) {
+
+	var xenonToken = System.getModule("com.vmware.cse.clm.configs").getValueFromGlobalConfig("xenonAdminToken");
+	headers.put("x-xenon-auth-token",xenonToken);
+	if(userIdentity) {
+		var userIdentityCacheUrl = baseUrl +  "/cms/api/v1/system/user-token?user="+userIdentity;
+		System.debug("CacheURI: "+userIdentityCacheUrl);
+		try {
+			var userIdentityCacheInfo = JSON.parse(System.getModule("com.vmware.cse.utils").restHttpRequest("GET",userIdentityCacheUrl,null,null,headers,host,null));
+		} catch(e) {
+			throw "Failed to find userIdentityCacheInfo for user: "+ userIdentity;
+		}
+		if(!userIdentityCacheInfo || !userIdentityCacheInfo.token) {
+			throw "Failed to find userIdentityCacheInfo for user: "+ userIdentity+ " [No token]";
+		}
+		headers.put("x-xenon-auth-token",userIdentityCacheInfo.token);
+	}
+
+
+	try {
+		response = System.getModule("com.vmware.cse.utils").restHttpRequest(method,url,null,null,headers,host,body);
+		
+		break;
+	} catch (e) {
+		System.log("xenon request error " + e);
+	    if ( e.indexOf("forbidden") != -1 || e.indexOf("com.vmware.xenon.common.Operation.fail") != -1 && !userIdentity || e.indexOf("Unexpected token")!=-1) {
+			currentCount++;
+			System.debug("getAuthToken - error caught and retyring - count=[" + currentCount + "] error=" + e);
+			System.getModule("com.vmware.cse.clm.xenon").configureXenonToken();
+		} else {
+			break;
+		}
+	}
+}
+
+return response;]]></script>
+</dunes-script-module>

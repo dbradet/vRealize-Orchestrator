@@ -1,0 +1,65 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="configureXenonToken" result-type="void" api-version="6.0.0" id="d246d581-22db-40a6-a522-a5d587ad0fd8" version="8.1.0" allowed-operations="evf" category-name="com.vmware.cse.clm.xenon">
+  <script encoded="false"><![CDATA[//TODO Need to fix up ports when switching to LCM
+
+var headers = new Properties();
+headers.put("Content-type","application/json");
+var scheme = "https://";
+var hostname = System.getModule("com.vmware.cse.clm.configs").getValueFromGlobalConfig("clmServer");
+var port = System.getModule("com.vmware.cse.utils").getUrlPart(hostname).port;
+var username = System.getModule("com.vmware.cse.clm.configs").getValueFromGlobalConfig("clmUsername");
+var password = System.getModule("com.vmware.cse.clm.configs").getValueFromGlobalConfig("xenonAdminPassword");
+var xenonToken;
+var url="";
+if(port){
+	url = scheme+hostname+":"+port+"/core/authn/basic";
+}else{
+	url = scheme+hostname+"/core/authn/basic";
+}
+//var url = scheme+hostname+"/core/authn/basic";
+var requestContent = '{"requestType":"LOGIN"}';
+
+if (!password) {
+
+	throw "Error : configureXenonToken : password not found in global configuration!";
+}
+
+var host;
+var currentCount = 0 ;
+var retryCount = 5;
+var response;
+
+while (currentCount < retryCount) {
+	System.sleep(10000);
+	try {
+		response = System.getModule("com.vmware.cse.utils").restHttpRequest("POST",url,username,password,headers,host,requestContent);
+		System.debug("Xenon token response: " + response);
+	} catch (err) {
+		System.log("configureXenonToken error - " + err);
+	}
+	if (response ) {
+		break;
+	} else {
+		currentCount++;		
+	}
+
+}
+
+if (! response) {
+	throw "Error : configureXenonToken : Failed to get response from Xenon Repository!";
+}
+
+for each (var header in response.split(",")) {
+	//System.log(header);
+	if (header.toLowerCase().indexOf("x-xenon-auth-token") != -1) {
+		xenonToken = header.split("=")[1];
+		if(xenonToken) {
+			var globalConfig = System.getModule("com.vmware.cse.clm.configs").getGlobalConfiguration();
+			globalConfig.setAttributeWithKey("xenonAdminToken", xenonToken);
+			break;
+		} else {
+			System.debug("[Error] Failed to generate xenon token for the user [" + username + "]");
+		}
+	}
+}]]></script>
+</dunes-script-module>

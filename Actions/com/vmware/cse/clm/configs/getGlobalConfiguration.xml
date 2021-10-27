@@ -1,0 +1,9 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="getGlobalConfiguration" result-type="ConfigurationElement" api-version="6.0.0" id="a737cdc7-bd7a-4be4-920f-b712e7c539db" version="8.1.0" allowed-operations="evf" category-name="com.vmware.cse.clm.configs">
+  <script encoded="false"><![CDATA[var	globalConfig = System.getModule("com.vmware.cse.utils").getConfigElement("Configuration","Library/Blackstone/Global Configuration");
+if (globalConfig){
+	return globalConfig;
+} else {
+	throw("ERROR: Could not find Global Configuration Element");
+}]]></script>
+</dunes-script-module>

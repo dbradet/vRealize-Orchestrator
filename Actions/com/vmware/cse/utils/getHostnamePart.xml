@@ -1,0 +1,21 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="getHostnamePart" result-type="string" api-version="6.0.0" id="838fe731-6cba-420f-8563-32ae6a1d4f83" version="8.1.0" allowed-operations="evf" category-name="com.vmware.cse.utils">
+  <param n="server" t="string"><![CDATA[]]></param>
+  <script encoded="false"><![CDATA[if (!server){ throw "Server cannot be null" }
+var port = "443";
+if (server.indexOf("http://") != -1){ 
+	port = "80";
+}
+server = server.toLowerCase().replace("https://","").replace("http://","");
+if ( server.indexOf(":") != -1) {
+	hostname = server.split(":")[0];
+	port = server.split(":")[1];
+} else {
+	hostname = server;
+}
+return {
+	hostname: hostname,
+	port: port
+};
+]]></script>
+</dunes-script-module>

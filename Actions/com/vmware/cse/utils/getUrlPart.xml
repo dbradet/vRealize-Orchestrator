@@ -1,0 +1,25 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="getUrlPart" result-type="Any" api-version="6.0.0" id="5ce53cb4-95af-4a7e-8e2f-5b2ce81adcde" version="8.1.0" allowed-operations="evf" category-name="com.vmware.cse.utils">
+  <param n="url" t="string"><![CDATA[e.g. getUrlPart(url).port or getUrlPart(url).hostname]]></param>
+  <script encoded="false"><![CDATA[//getLocation("http://example.com:443/path/?search=test#hash");
+if ( !url) {
+	throw ("Url is empty!");
+}
+
+if (url.slice(-1) != "/" && url.indexOf("http") != -1){
+	url += "/";
+}
+var match = url.match(/^(https?\:)\/\/(([^:\/?#]*)(?:\:([0-9]+))?)(\/[^?#]*)(\?[^#]*|)(#.*|)$/);
+if (!match){
+	return System.getModule("com.vmware.cse.utils").getHostnamePart(url);
+}
+return match && {
+	protocol: match[1],
+	host: match[2],
+	hostname: match[3],
+	port: match[4],
+	path: match[5],
+	search: match[6],
+	hash: match[7]
+}]]></script>
+</dunes-script-module>

@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<ns2:workflow xmlns:ns2="http://vmware.com/vco/workflow" root-name="item4" object-name="workflow:name=generic" id="4c1f7ec5-397f-4f78-a733-eeb8723b9871" editor-version="2.0" version="0.0.2" api-version="6.0.0" allowed-operations="evf" restartMode="1" resumeFromFailedMode="0">
+    <display-name>Temporary VM Snapshots</display-name>
+    <position y="45.90909090909091" x="25.0"/>
+    <input>
+        <param name="VM" type="VC:VirtualMachine"/>
+        <param name="DaysTillDelete" type="number">
+            <description>Tage bis Snapshot gelöscht wird</description>
+        </param>
+        <param name="withMemory" type="boolean"/>
+        <param name="description" type="string">
+            <description>SR &amp; Email</description>
+        </param>
+    </input>
+    <output/>
+    <attrib name="quiesce" type="boolean">
+        <value encoded="n">true</value>
+        <description>If TRUE and the virtual machine is powered on when the snapshot is taken, VMware Tools are used to quiesce the file system in the virtual machine.</description>
+    </attrib>
+    <attrib name="snapshot" type="VC:VirtualMachineSnapshot">
+        <value encoded="n"/>
+        <description>The snapshot created</description>
+    </attrib>
+    <attrib name="DeleteDate" type="Date">
+        <value encoded="n"/>
+    </attrib>
+    <attrib name="CurrentDateSTR" type="string">
+        <value encoded="n"></value>
+    </attrib>
+    <attrib name="scheduledTask" type="Task">
+        <value encoded="n"/>
+        <description>Scheduled workflow task</description>
+    </attrib>
+    <workflow-item name="item0" type="end" end-mode="0" comparator="0">
+        <in-binding/>
+        <out-binding/>
+        <position y="45.40909090909091" x="744.5"/>
+    </workflow-item>
+    <workflow-item name="item1" out-name="item2" type="link" linked-workflow-id="BD80808080808080808080808080808053C180800122528313869552e41805bb1" comparator="0">
+        <display-name>Create a snapshot</display-name>
+        <in-binding>
+            <bind name="vm" type="VC:VirtualMachine" export-name="VM">
+                <description>Virtual machine of which to create a snapshot</description>
+            </bind>
+            <bind name="name" type="string" export-name="description">
+                <description>Snapshot name. The name need not be unique for this virtual machine.</description>
+            </bind>
+            <bind name="description" type="string" export-name="CurrentDateSTR">
+                <description>Snapshot description.</description>
+            </bind>
+            <bind name="memory" type="boolean" export-name="withMemory">
+                <description>If TRUE, the snapshot includes a dump of the internal state of the virtual machine (a memory dump). </description>
+            </bind>
+            <bind name="quiesce" type="boolean" export-name="quiesce">
+                <description>If TRUE and the virtual machine is powered on when the snapshot is taken, VMware Tools are used to quiesce the file system in the virtual machine.</description>
+            </bind>
+        </in-binding>
+        <out-binding>
+            <bind name="snapshot" type="VC:VirtualMachineSnapshot" export-name="snapshot">
+                <description>The snapshot created</description>
+            </bind>
+        </out-binding>
+        <description>Creates a snapshot.</description>
+        <position y="50.0" x="300.0"/>
+    </workflow-item>
+    <workflow-item name="item2" out-name="item0" type="task" launched-workflow-id="b13c4705-c32f-4c6a-ba2a-beb4d1aff47f" comparator="0">
+        <display-name>deleteSnapshot</display-name>
+        <script encoded="false">//Auto generated script, cannot be modified !
+var workflowToLaunch = Server.getWorkflowWithId("b13c4705-c32f-4c6a-ba2a-beb4d1aff47f");
+if (workflowToLaunch == null) {
+	throw "Workflow not found";
+}
+
+var workflowParameters = new Properties();
+workflowParameters.put("snapshot",snapshot);
+var scheduledTask = workflowToLaunch.schedule(workflowParameters,workflowScheduleDate);</script>
+        <in-binding>
+            <bind name="snapshot" type="VC:VirtualMachineSnapshot" export-name="snapshot"/>
+            <bind name="workflowScheduleDate" type="Date" export-name="DeleteDate">
+                <description>Schedule execution date</description>
+            </bind>
+        </in-binding>
+        <out-binding>
+            <bind name="scheduledTask" type="Task" export-name="scheduledTask">
+                <description>Scheduled workflow task</description>
+            </bind>
+        </out-binding>
+        <position y="55.40909090909091" x="544.5"/>
+    </workflow-item>
+    <workflow-item name="item4" out-name="item1" type="task" comparator="0">
+        <display-name>calculate Delete Date</display-name>
+        <script encoded="false">var CurrentDate = new Date();
+var DeleteDate = new Date();
+CurrentDateSTR = CurrentDate.toString();
+DeleteDate.setDate(DeleteDate.getTime() + (DaysTillDelete * 60000));
+description = description + " ; " + VM.name;
+if (withMemory ===  true){
+    quiesce = false;
+}</script>
+        <in-binding>
+            <bind name="DaysTillDelete" type="number" export-name="DaysTillDelete"/>
+            <bind name="description" type="string" export-name="description"/>
+            <bind name="VM" type="VC:VirtualMachine" export-name="VM"/>
+            <bind name="withMemory" type="boolean" export-name="withMemory"/>
+            <bind name="quiesce" type="boolean" export-name="quiesce"/>
+        </in-binding>
+        <out-binding>
+            <bind name="DeleteDate" type="Date" export-name="DeleteDate"/>
+            <bind name="CurrentDateSTR" type="string" export-name="CurrentDateSTR"/>
+            <bind name="quiesce" type="boolean" export-name="quiesce"/>
+        </out-binding>
+        <position y="60.0" x="120.0"/>
+    </workflow-item>
+</ns2:workflow>

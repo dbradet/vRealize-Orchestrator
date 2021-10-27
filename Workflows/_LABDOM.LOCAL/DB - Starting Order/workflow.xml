@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<ns2:workflow xmlns:ns2="http://vmware.com/vco/workflow" root-name="item1" object-name="workflow:name=generic" id="c179c41e-8b67-4e33-b83c-a2eff2442740" editor-version="2.0" version="0.0.0" api-version="6.0.0" restartMode="1" resumeFromFailedMode="0">
+    <display-name>DB - Starting Order</display-name>
+    <position y="50.0" x="100.0"/>
+    <input>
+        <param name="vmFolder" type="VC:VmFolder"/>
+    </input>
+    <output/>
+    <attrib name="Order" type="string">
+        <value encoded="n"/>
+    </attrib>
+    <attrib name="vm_array" type="Array/VC:VirtualMachine">
+        <value encoded="n"/>
+    </attrib>
+    <workflow-item name="item0" type="end" end-mode="0" comparator="0">
+        <in-binding/>
+        <out-binding/>
+        <position y="50.0" x="360.0"/>
+    </workflow-item>
+    <workflow-item name="item1" out-name="item3" type="task" script-module="com.vmware.library.vc.folder/getAllVirtualMachinesByFolder" comparator="0">
+        <display-name>getAllVirtualMachinesByFolder</display-name>
+        <script encoded="false">//Auto generated script, cannot be modified !
+actionResult = System.getModule("com.vmware.library.vc.folder").getAllVirtualMachinesByFolder(vmFolder);
+</script>
+        <in-binding>
+            <bind name="vmFolder" type="VC:VmFolder" export-name="vmFolder">
+                <description></description>
+            </bind>
+        </in-binding>
+        <out-binding>
+            <bind name="actionResult" type="Array/VC:VirtualMachine" export-name="vm_array"/>
+        </out-binding>
+        <description>Add a note to the workflow schema.</description>
+        <position y="120.0" x="60.0"/>
+    </workflow-item>
+    <workflow-item name="item2" out-name="item0" type="task" script-module="com.vmware.library.vc.customattribute/getCustomField" comparator="0">
+        <display-name>getCustomField</display-name>
+        <script encoded="false">//Auto generated script, cannot be modified !
+actionResult = System.getModule("com.vmware.library.vc.customattribute").getCustomField(managedEntity,customFieldName);
+</script>
+        <in-binding>
+            <bind name="managedEntity" type="Any" export-name="">
+                <description></description>
+            </bind>
+            <bind name="customFieldName" type="string" export-name="Order">
+                <description></description>
+            </bind>
+        </in-binding>
+        <out-binding>
+            <bind name="actionResult" type="string" export-name=""/>
+        </out-binding>
+        <description>Add a note to the workflow schema.</description>
+        <position y="180.0" x="220.0"/>
+    </workflow-item>
+    <workflow-item name="item3" out-name="item2" type="foreach" comparator="0">
+        <display-name>Foreach element</display-name>
+        <in-binding/>
+        <out-binding/>
+        <reference/>
+        <position y="180.0" x="60.0"/>
+    </workflow-item>
+</ns2:workflow>

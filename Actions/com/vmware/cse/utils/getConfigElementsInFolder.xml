@@ -1,0 +1,12 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="getConfigElementsInFolder" result-type="Array/ConfigurationElement" api-version="6.0.0" id="0a5bbccc-d2ae-4dcd-b6af-c010bf605472" version="8.1.0" allowed-operations="evf" category-name="com.vmware.cse.utils">
+  <param n="folder" t="string"><![CDATA[Configuration Element folder e.g. CLM/Resources]]></param>
+  <script encoded="false"><![CDATA[var configElements = [];
+var rootCategory = Server.getConfigurationElementCategoryWithPath(folder);
+var subCategories = rootCategory.subCategories;
+configElements = configElements.concat(rootCategory.configurationElements);
+for each (var category in subCategories) {
+	configElements = configElements.concat(category.configurationElements);
+}
+return configElements;]]></script>
+</dunes-script-module>

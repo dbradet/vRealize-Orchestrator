@@ -1,0 +1,13 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="getValueFromGlobalConfig" result-type="Any" api-version="6.0.0" id="430041ee-270f-43b0-9672-e6056aedceef" version="8.1.0" allowed-operations="evf" category-name="com.vmware.cse.clm.configs">
+  <param n="key" t="string"><![CDATA[]]></param>
+  <script encoded="false"><![CDATA[try{
+	var result = System.getModule("com.vmware.cse.clm.configs").getGlobalConfiguration().getAttributeWithKey(key).value;
+	//System.log("getValueFromGlobalConfig key=" + key + " value=" + result);
+	return result;
+} catch (error) {
+	System.debug("Warning: Key '"+key+"' not found in Global Configuration. Inner exception: " + error);
+	return null;
+}
+]]></script>
+</dunes-script-module>

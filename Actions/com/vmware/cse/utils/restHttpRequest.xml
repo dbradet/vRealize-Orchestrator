@@ -1,0 +1,140 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="restHttpRequest" result-type="string" api-version="6.0.0" id="0234b5a5-9262-4987-b90d-4587a549aa68" version="8.1.0" allowed-operations="evf" category-name="com.vmware.cse.utils">
+  <param n="method" t="string"><![CDATA[]]></param>
+  <param n="url" t="string"><![CDATA[]]></param>
+  <param n="username" t="string"><![CDATA[]]></param>
+  <param n="password" t="SecureString"><![CDATA[]]></param>
+  <param n="headers" t="Properties"><![CDATA[]]></param>
+  <param n="host" t="REST:RESTHost"><![CDATA[]]></param>
+  <param n="requestContent" t="Any"><![CDATA[]]></param>
+  <param n="catchErrorOnFailure" t="boolean"><![CDATA[]]></param>
+  <script encoded="false"><![CDATA[if (!url || !method){
+	throw "Error: url and method are required. url: " + url + " method: " + method;
+}
+
+var result;
+var response;
+var urlObj = System.getModule("com.vmware.cse.utils").getUrlPart(url);
+if (!urlObj){
+	throw "Error: Could not get URL parts from URL: " + url;
+}
+var baseUrl = urlObj.protocol + "//" + urlObj.host;	
+
+var port;
+var ssl = true;
+try{
+	port = parseInt(urlObj.port);
+} catch (e){
+	System.debug(e);
+}
+
+try {
+	if (urlObj.protocol.indexOf("https") != -1){
+		ssl = true;
+		if (!port){	port = 443 }
+	} else {
+		ssl = false;
+		if (!port){	port = 80 }
+	}
+}catch (err) {
+	ssl = true;
+	port = 443
+	
+}
+
+
+var operationUrl = url.replace(baseUrl,"");
+var tempHost = false;
+
+
+try{
+	if (!host){
+		tempHost = true;
+		if (ssl){
+			try{			
+				System.getModule("com.vmware.cse.clm.utils").getCertificates("https://"+urlObj.hostname+":"+port,"");
+			} catch (certError){
+				throw "Certificate Import Error in restHttpRequest try block : "+certError;
+			}	
+		}
+		
+		//System.log("Add Rest host for =>" + url);
+		var host = System.getModule("com.vmware.cse.utils").addRESTHost(System.nextUUID(),url,username,password);
+		var hostId = host.id;
+		//System.log("Using hostid : " + hostId);
+	}
+	
+	if (!host){
+		throw("Failed to create REST host");
+	}
+	
+	var request = host.createRequest(method, operationUrl, requestContent);
+	if (headers){
+		for each (var header in headers.keys){
+			request.setHeader(header, headers.get(header));
+		}
+	}
+	//System.debug("host : "+host+", url : "+url);
+	response = request.execute();
+	
+	if (response){
+		result = response.contentAsString;
+	}
+
+	if ((result == "" || (url.indexOf("/core/authn/basic")!= -1)) && method == "POST" ) {
+		var headers = response.getAllHeaders()
+		for each (var header in headers.keys){
+			result += header + "=" + headers.get(header) + ",";
+		}
+	}
+	
+	if ((url.indexOf("/api/sessions")!= -1) && method == "POST" ) {
+		var headers = response.getAllHeaders()
+		for each (var header in headers.keys){
+			if (header == "x-vcloud-authorization") {
+				result = headers.get(header);
+			}
+		}
+	}
+	
+} catch (error){
+	System.log("error: " + error);
+	//result = error;
+	if (error.toString().indexOf("Certificate is not in JSSECA store") != -1 || error.toString().indexOf("CertificateException") != -1){
+		System.log("installCertificates...");
+		
+		try{			
+			System.getModule("com.vmware.cse.clm.utils").getCertificates("https://"+urlObj.hostname+":"+port,"");
+		} catch (certError){
+			throw "Certificate Import Error in restHttpRequest catch block : "+certError;
+		}
+		
+		result = System.getModule("com.vmware.cse.utils").restHttpRequest(method,url,username,password,headers,host,requestContent);
+	} 
+} finally {
+	if (tempHost){
+		try{
+			//Remove host
+			//System.log("Remove rest host started");
+			RESTHostManager.removeHost(hostId);
+			//System.log("Remove rest host completed");
+		} catch (removeError) {}
+	}
+}
+
+if (response){
+	//System.debug("response: " + response);
+	var statusCode = response.statusCode.toString();
+ 	var statusCodeFirstChar = statusCode.substring(0,1);
+	if (catchErrorOnFailure) {
+		return result;
+	} else {
+		if (!statusCode || statusCodeFirstChar == "4" ||  statusCodeFirstChar == "5"){
+			throw("HTTP request returned status code: " + response.statusCode + " URL: " + url + " Response: " + response.contentAsString);
+		}
+ 	}
+ }
+
+return result;
+	]]></script>
+</dunes-script-module>

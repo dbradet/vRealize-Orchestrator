@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<ns2:workflow xmlns:ns2="http://vmware.com/vco/workflow" root-name="item1" object-name="Workflow:name=generic" id="8eaa845c-3531-4173-98e5-60cd7c4c5598" editor-version="2.0" version="0.3.1" api-version="6.0.0" allowed-operations="vef" restartMode="1" resumeFromFailedMode="0">
+    <display-name>DB - Start virtual machine and wait</display-name>
+    <description>Starts a virtual machine and waits for VMware Tools to start.</description>
+    <ref-types>(VC:VirtualMachine)</ref-types>
+    <position y="10.0" x="120.0"/>
+    <input>
+        <param name="vm" type="VC:VirtualMachine">
+            <description>Virtual machine to start</description>
+        </param>
+        <param name="host" type="VC:HostSystem">
+            <description>[Optional] The host on which to power on the virtual machine. The host must be part of the same compute resource with which the virtual machine is currently associated. Uses the currently associated host if you do not specify a new host or if you specify an incompatible host.</description>
+        </param>
+    </input>
+    <output/>
+    <attrib name="task" type="VC:Task">
+        <value encoded="n"/>
+        <description>Task to await</description>
+    </attrib>
+    <attrib name="pollRate" type="number">
+        <value encoded="n">1.0</value>
+        <description>Polling rate for the task state, in seconds</description>
+    </attrib>
+    <attrib name="timeout" type="number">
+        <value encoded="n">5.0</value>
+        <description>Timeout before throwing a timeout exception, in minutes</description>
+    </attrib>
+    <workflow-item name="item1" out-name="item7" alt-out-name="item0" type="custom-condition" comparator="0">
+        <display-name>VM is poweredOn?</display-name>
+        <script encoded="false">return vm.runtime.powerState.value == "poweredOn";</script>
+        <in-binding>
+            <bind name="vm" type="VC:VirtualMachine" export-name="vm"/>
+        </in-binding>
+        <out-binding/>
+        <position y="50.0" x="80.0"/>
+    </workflow-item>
+    <workflow-item name="item7" out-name="item5" type="task" interaction="l" comparator="0">
+        <display-name>Already started</display-name>
+        <script encoded="false">System.log("VM already started");</script>
+        <in-binding/>
+        <out-binding/>
+        <position y="120.0" x="80.0"/>
+    </workflow-item>
+    <workflow-item name="item5" out-name="item2" type="task" script-module="com.vmware.library.vc.vm.tools/vim3WaitToolsStarted" comparator="0">
+        <display-name>vim3WaitToolsStarted</display-name>
+        <script encoded="false">//Auto generated script, cannot be modified !
+System.getModule("com.vmware.library.vc.vm.tools").vim3WaitToolsStarted(vm,pollingRate,timeout) ;</script>
+        <in-binding>
+            <bind name="vm" type="VC:VirtualMachine" export-name="vm">
+                <description>VM in which the action look to get the new DNS Name</description>
+            </bind>
+            <bind name="timeout" type="number" export-name="timeout">
+                <description>Timeout before throwing a timeout exception [minutes]</description>
+            </bind>
+            <bind name="pollingRate" type="number" export-name="pollRate">
+                <description>Time between all request information on the tools [seconds]</description>
+            </bind>
+        </in-binding>
+        <out-binding/>
+        <description>Wait for the VMware tools to be up and the guest running
+
+Exception:
+- Timeout: When timeout is reached
+- ReferenceError: When vm is not setted correctly</description>
+        <position y="180.0" x="180.0"/>
+    </workflow-item>
+    <workflow-item name="item2" type="end" end-mode="0" comparator="0">
+        <in-binding/>
+        <out-binding/>
+        <position y="210.0" x="220.0"/>
+    </workflow-item>
+    <workflow-item name="item0" out-name="item3" type="task" script-module="com.vmware.library.vc.vm.power/startVM" comparator="0">
+        <display-name>startVM</display-name>
+        <script encoded="false">//Auto generated script, cannot be modified !
+actionResult = System.getModule("com.vmware.library.vc.vm.power").startVM(vm,host) ;</script>
+        <in-binding>
+            <bind name="vm" type="VC:VirtualMachine" export-name="vm">
+                <description>VM to start or resume</description>
+            </bind>
+            <bind name="host" type="VC:HostSystem" export-name="host">
+                <description>[Optional] The host where the virtual machine is to be powered on. If no host is specified, the current associated host is used. This field must specify a host that is part of the same compute resource that the virtual machine is currently associated with. If this host is not compatible, the current host association is used. </description>
+            </bind>
+        </in-binding>
+        <out-binding>
+            <bind name="actionResult" type="VC:Task" export-name="task"/>
+        </out-binding>
+        <description>Start / Resume a VM. Return the start task</description>
+        <position y="60.0" x="280.0"/>
+    </workflow-item>
+    <workflow-item name="item3" out-name="item5" type="link" linked-workflow-id="B8808080808080808080808080808080C480808001231146624761b79546544c2" comparator="0">
+        <display-name>Wait for task and answer virtual machine question</display-name>
+        <in-binding>
+            <bind name="vm" type="VC:VirtualMachine" export-name="vm">
+                <description>Virtual machine for which the task runs</description>
+            </bind>
+            <bind name="task" type="VC:Task" export-name="task">
+                <description>Task to await</description>
+            </bind>
+        </in-binding>
+        <out-binding/>
+        <description>Waits for a vCenter task to complete or for the virtual machine to ask a question. If the virtual machine requires an answer, accepts user input and answers the question.</description>
+        <position y="120.0" x="280.0"/>
+    </workflow-item>
+</ns2:workflow>

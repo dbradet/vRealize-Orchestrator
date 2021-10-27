@@ -1,0 +1,10 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="getCertificates" result-type="void" api-version="6.0.0" id="108292c6-795d-49db-b837-5dffb60df651" version="8.1.0" allowed-operations="evf" category-name="com.vmware.cse.clm.utils">
+  <param n="url" t="string"><![CDATA[]]></param>
+  <param n="certAlias" t="string"><![CDATA[]]></param>
+  <script encoded="false"><![CDATA[var ld = Config.getKeystores().getImportCAFromUrlAction();
+ld.setCertificateAlias(certAlias)
+var model = ld.getModel();
+model.value = url;
+error = ld.execute();]]></script>
+</dunes-script-module>

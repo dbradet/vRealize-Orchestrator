@@ -1,0 +1,119 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="restHttpRequest" result-type="Any" api-version="6.0.0" id="07d55bc9-16b0-4118-b9d3-a8f9edeb9eb4" version="8.1.0" allowed-operations="evf" category-name="com.vmware.cse.clm.vra.api">
+  <param n="apiUrl" t="string"><![CDATA[]]></param>
+  <param n="apiService" t="string"><![CDATA[]]></param>
+  <param n="configLink" t="string"><![CDATA[]]></param>
+  <param n="httpMethod" t="string"><![CDATA[]]></param>
+  <param n="data" t="Any"><![CDATA[]]></param>
+  <param n="vcacHost" t="vCACCAFE:VCACHost"><![CDATA[]]></param>
+  <param n="usePropertyClient" t="boolean"><![CDATA[]]></param>
+  <script encoded="false"><![CDATA[if (!configLink){ return null}
+if (!apiService){ return null}
+if (!apiUrl){ return null}
+
+var createdHost = false;
+if (!vcacHost) {
+
+	createdHost = true;
+	
+	var sourceConfig = JSON.parse(System.getModule("com.vmware.cse.clm.xenon").request("GET",configLink));
+	var server = sourceConfig.server;
+	var user = sourceConfig.user;
+	var password = sourceConfig.password;
+	var port = System.getModule("com.vmware.cse.utils").getUrlPart(server).port;
+	var hostname = System.getModule("com.vmware.cse.utils").getUrlPart(server).hostname;			
+
+	try{
+		System.getModule("com.vmware.cse.clm.utils").getCertificates("https://"+hostname+":"+port,"");
+	}catch (certError){
+		throw "Certificate Import Error in restHttpRequest of vra.api : "+certError;
+	}
+	
+	var tenant = sourceConfig.keyValues.tenant;
+	if (!tenant){
+		tenant = "vsphere.local";
+	}
+	
+	vcacHost = vCACCAFEHostManager.addHost({
+		name: "vra7-" + System.nextUUID().toString(),
+		url: "https://"+hostname,
+		tenant: tenant,
+		sessionMode: "Shared Session",
+		username: user,
+		password: password,
+		connectionTimeout: 0,
+		operationTimeout: 0
+	});
+
+}		
+
+var error = null;
+
+function createClient() {
+
+	if (usePropertyClient) {
+			System.debug("Executing with properties rest client");
+			return vcacHost.createPropertyClient();
+	}
+	
+	System.debug("Executing with generic rest client");
+	return vcacHost.createRestClient(apiService);	
+
+}
+
+try {
+	
+	client = createClient();
+	var result = null;
+	
+	switch(httpMethod) {
+	
+		case "GET":
+			if (usePropertyClient) {
+				// Sample url https://{{va-fqdn}}/properties-service/api/content/PropertyGroup/all_tenant_with_password?secureValueFormat=DECRYPT
+				// Sample url https://{{va-fqdn}}/properties-service/api/content/PropertyDefinition/all_tenant_with_password?secureValueFormat=DECRYPT
+				result = client.getFile(apiService + apiUrl + "?secureValueFormat=DECRYPT").content;
+				break;
+			}
+			
+			if (apiUrl.indexOf("?") == -1) {
+				apiUrl = apiUrl + "?limit=10000"
+			}
+			result = client.get(apiUrl);
+			System.debug("restHttpRequest apiUrl="+apiUrl);
+			break;
+			
+			
+			break;
+			
+		case "POST":
+			result = client.post(apiUrl, data);
+			break;	
+			
+		case "PUT":
+			result = client.put(apiUrl, data);
+			break;
+		
+	}
+
+} catch (err){
+	error = err;
+}
+
+if (createdHost){
+	try{
+		vCACCAFEHostManager.removeHost(vcacHost);
+		
+	} catch (err) {
+		System.debug("error removing rest host: " + err);
+	}
+}
+
+if (error){
+	throw error;
+}
+
+
+return result;	
+]]></script>
+</dunes-script-module>

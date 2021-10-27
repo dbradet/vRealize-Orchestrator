@@ -1,0 +1,22 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="getConfigElement" result-type="ConfigurationElement" api-version="6.0.0" id="27753963-291b-4517-bcff-308f9805a51d" version="8.1.0" allowed-operations="evf" category-name="com.vmware.cse.utils">
+  <param n="configElementName" t="string"><![CDATA[]]></param>
+  <param n="folder" t="string"><![CDATA[]]></param>
+  <script encoded="false"><![CDATA[//System.log("Retrieving attribute with key '" + key + "' from config element '" + configElementName + "' in folder '" + folder + "'");
+var configs = System.getModule("com.vmware.cse.utils").getConfigElementsInFolder(folder);
+//System.log("Found " + configs.length + " configs in root folder " + folder);
+var attribute = null;
+if (configs.length > 0) {
+	//System.log("Configs object type: " + System.getObjectType(configs));
+	for each (var config in configs) {
+		//System.log("Config object type: " + System.getObjectType(config));
+		//System.log("Processing config element: " + config.name);
+		if (config.name == configElementName) {
+			 return config;		
+		}
+	}
+} else {
+	System.debug("No configuration elements found in folder: " + folder);
+}
+return null;]]></script>
+</dunes-script-module>

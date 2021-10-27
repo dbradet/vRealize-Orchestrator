@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<ns2:workflow xmlns:ns2="http://vmware.com/vco/workflow" root-name="item1" object-name="workflow:name=generic" id="d3fdc216-a32b-4ba9-be7b-d0501fdb3709" editor-version="2.0" version="0.0.0" api-version="6.0.0" restartMode="1" resumeFromFailedMode="0">
+    <display-name>test-time</display-name>
+    <position y="50.0" x="100.0"/>
+    <input/>
+    <output/>
+    <workflow-item name="item0" type="end" end-mode="0" comparator="0">
+        <in-binding/>
+        <out-binding/>
+        <position y="50.0" x="390.0"/>
+    </workflow-item>
+    <workflow-item name="item1" out-name="item0" type="task" comparator="0">
+        <display-name>Scriptable task</display-name>
+        <script encoded="false">var START;
+var END;
+var differenceSec
+START = 1565628094441;
+END = 1565714527812;
+var differenceSec = (END - START);
+
+//24 * 60 * 60 = 86400 second in a day
+System.log("Resultat = " + differenceSec);
+
+differenceSec = differenceSec/1000;
+//Obtient le resultat en miliseconde
+
+System.log("Jours = " + Math.round((differenceSec/24/60/60)* 100 ) / 100.0);
+System.log("Heures = " + Math.round((differenceSec/60/60)* 100 ) / 100.0);
+System.log("Minutes = " + Math.round((differenceSec/60)* 100 ) / 100.0);</script>
+        <in-binding/>
+        <out-binding/>
+        <description>Simple task with custom script capability.</description>
+        <position y="80.0" x="160.0"/>
+    </workflow-item>
+</ns2:workflow>
